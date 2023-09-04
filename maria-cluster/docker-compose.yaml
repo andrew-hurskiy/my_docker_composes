@@ -1,0 +1,17 @@
+---
+services:
+  mariadb-galera:
+    image: 'bitnami/mariadb-galera:latest'
+    ports:
+      - "3306:3306"
+    environment:
+      - MARIADB_ROOT_USER=cat
+      - MARIADB_ROOT_PASSWORD=password123
+      - MARIADB_DATABASE=default_one
+      - ALLOW_EMPTY_PASSWORD=true
+    networks:
+      - app-tier
+
+networks:
+  app-tier:
+    driver: bridge

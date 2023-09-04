@@ -1,0 +1,39 @@
+version: "3"
+services:
+  rabbitmq:
+    container_name: zaika
+    image: rabbitmq:management
+    ports:
+      - "5672:5672" # RabbitMQ default port
+      - "15672:15672" # RabbitMQ management plugin port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq # Named volume for RabbitMQ data
+
+  mysql1:
+    container_name: galera_a
+    image: percona/percona-xtradb-cluster:5.7
+    command: --wsrep-new-cluster --wsrep_cluster_address=gcomm://mysql1,mysql2
+    ports:
+      - "3306:3306" # MySQL default port
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=mydb
+    volumes:
+      - mysql1_data:/var/lib/mysql
+
+  mysql2:
+    container_name: galera_b
+    image: percona/percona-xtradb-cluster:5.7
+    command: --wsrep_cluster_address=gcomm://mysql1,mysql2
+    ports:
+      - "3307:3306" # MySQL port mapped to a different host port
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=mydb
+    volumes:
+      - mysql2_data:/var/lib/mysql
+
+volumes:
+  mysql1_data:
+  mysql2_data:
+  rabbitmq_data:

@@ -1,0 +1,90 @@
+# To use it properly you would need to create few things, when start it first time:
+# 1. For rabbitMq, you should create 4 queues and bind them to corresponding exchanges
+# Queues are : ['failure', 'log', 'modify', 'view'] . Make them persistent, so they won't be removed later on.
+# 2. For database, you would need to to create tables, stored procedures and fill data in. Probably fast way is to backup and restore some existed db
+# 3. If use minio storage, then you should create buckets + upload files there
+
+services:
+
+  # You would be asked to create password for container on first login
+  # Use it if you want to visualize containers 
+  # localhost:9003 // UI
+  portainer:
+    image: portainer/portainer-ce:alpine
+    container_name: portainer_pa
+    command: -H unix:///var/run/docker.sock
+    ports:
+      - "9003:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "portainer_data:/data"
+    restart: unless-stopped
+
+  # localhost:15672 // UI
+  rabbitmq:
+    container_name: krolik_pa
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=password1234
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - shared
+
+  # redis-cli from terminal
+  redis:
+    container_name: rediska_pa
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - shared
+
+  # Minio is used as S3 for sound files, avatar images.
+  # For correct work you might login there and create buckets and upload some files to those buckets
+  # localhost:9001 - UI
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minion_pa
+    command: server --console-address ":9001" /data
+    ports: 
+      - 9001:9001
+      - 9000:9000
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password1234
+    volumes:
+      - minio_data:/data
+    networks:
+      - shared
+
+  # mysql -u admin -p // From terminal
+  mariadb-galera:
+    image: 'bitnami/mariadb-galera:latest'
+    container_name: baza_pa
+    ports:
+      - "3306:3306"
+    environment:
+      - MARIADB_ROOT_USER=admin
+      - MARIADB_ROOT_PASSWORD=password1234
+      - ALLOW_EMPTY_PASSWORD=true
+      - MARIADB_DATABASE=voicenter_core
+    networks:
+      - shared
+    volumes:
+      - galera_data:/bitnami/mariadb
+
+volumes:
+  rabbitmq_data:
+  minio_data:
+  portainer_data:
+  galera_data:
+
+networks:
+  shared:
+    driver: bridge

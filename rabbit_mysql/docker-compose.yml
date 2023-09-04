@@ -1,0 +1,25 @@
+version: "3"
+services:
+  rabbitmq:
+    container_name: zaika
+    image: rabbitmq:management
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq # Named volume for RabbitMQ data
+    ports:
+      - "5672:5672" # RabbitMQ default port
+      - "15672:15672" # RabbitMQ management plugin port
+
+  mysql:
+    container_name: mysql_baza
+    image: mysql
+    ports:
+      - "3306:3306" # MySQL default port
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=mydb
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  rabbitmq_data:
+  mysql_data:
