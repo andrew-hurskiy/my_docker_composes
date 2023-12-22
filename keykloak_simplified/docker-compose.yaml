@@ -1,0 +1,31 @@
+---
+services:
+  keycloak:
+    image: keycloak/keycloak:23.0
+    container_name: keycloak
+    command: start-dev
+    environment:
+      - KEYCLOAK_USER=keycloak
+      - KEYCLOAK_PASSWORD=keycloak
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin123
+      - DB_VENDOR=POSTGRES
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres_kk
+
+  postgres_kk:
+    image: postgres
+    container_name: postgres_kk
+    environment:
+      POSTGRES_DB: keycloakclaimadministrator
+      POSTGRES_USER: keycloakclaimadministrator
+      POSTGRES_PASSWORD: keycloakclaimadministrator
+      PGDATA: /data/postgres
+    ports:
+      - "5432:5432"
+    volumes:
+       - postgres_kk:/data/postgres
+volumes:
+    postgres_kk:
